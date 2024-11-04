@@ -1,22 +1,28 @@
-<script setup lang="ts">
-import { RouterView } from 'vue-router';
-</script>
-
 <template>
-  <RouterView />
+  <v-app>
+    <NavigationBar v-if="!$route.meta.hideNavbar"/>
+
+    <v-main>
+      <RouterView />
+    </v-main>
+  </v-app>
 </template>
 
-<style scoped>
-/* .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-} */
-</style>
+<script setup lang="ts">
+import { ref } from 'vue';
+import { RouterView } from 'vue-router';
+import { getAuth, User, onAuthStateChanged } from 'firebase/auth';
+import NavigationBar from './components/ui/SideNavigationBar/SideNavigationBar.vue';
+import { onMounted } from 'vue';
+
+
+const currentUser = ref<User | null>(null);
+
+onMounted(() => {
+  const auth = getAuth();
+  // ログインしているユーザーを取得する
+  onAuthStateChanged(auth, (user) => {
+    currentUser.value = user;
+  });
+});
+</script>
