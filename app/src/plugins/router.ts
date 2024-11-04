@@ -1,11 +1,43 @@
 // Vue Routerパッケージのインポート
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from "../components/page/Home.vue";
-import Second from "../components/page/Second.vue";
 
 const routes = [
-  {path: '/', component: Home },
-  {path: '/second', component: Second },
+  { 
+    path: '/', 
+    component: () => import("../components/page/user/SignIn.vue"),
+    meta: {
+      hideNavbar: true,
+    },
+  },
+  { 
+    path: '/calendar', 
+    component: () => import("../components/page/calendar/Index.vue"),
+    meta: {
+      requiresAuth: true, // ログイン必須
+    },
+  },
+  { 
+    path: "/signin", 
+    component: () => import("../components/page/user/SignIn.vue"),
+    meta: {
+      hideNavbar: true,
+     },
+  },
+  { 
+    path: "/register", 
+    component: () => import("../components/page/user/Register.vue"),
+    meta: {
+      hideNavbar: true,
+     }, 
+  },
+  { 
+    path: "/user/detail", 
+    component: () => import("../components/page/user/Detail.vue"),
+    meta: {
+      requiresAuth: true, // ログイン必須
+    }
+  },
 
   // 存在しないパスは全てTOPへ
   // { path: '/:catchAll(.*)', redirect: '/' }
@@ -16,11 +48,31 @@ const router = createRouter({
   routes,
 })
 
-// router.beforeEach((to, from) => {
-//   // URL直接入力の場合はTOPへ
-//   if (to.path != '/' && from.name == undefined) {
-//     return '/'
-//   }
-// })
+const getCurrentUser = () => {
+  return new Promise((resolve, reject) => {
+    const removeListener = onAuthStateChanged(
+      getAuth(), 
+      (user) => {
+        removeListener();
+        resolve(user);
+      },
+      reject
+    )
+  })
+}
+
+
+// ログインが必要なページの場合はログインしていないとアクセスできない
+router.beforeEach(async (to, from, next) => {
+  if(to.matched.some((record) => record.meta.requiresAuth)){
+    if(await getCurrentUser()){
+      next();
+    }else{
+      next("/signin");
+    }
+  }else{
+    next();
+  }
+})
 
 export default router
