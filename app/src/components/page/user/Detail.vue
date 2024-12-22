@@ -37,6 +37,20 @@
       </v-tabs-window-item>
     </v-tabs-window>
 
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item
+        :key="2"
+        :value="2"
+      >
+        <v-container>
+          <div>aaa</div>
+          <div ref="tableElm"></div>
+        </v-container>
+      </v-tabs-window-item>
+    </v-tabs-window>
+
+    
+
     <v-footer class="pa-2 border-t position-absolute bottom-0 w-100">
       <div class="w-100 d-flex justify-center">
         <v-btn color="primary" style="min-width: 240px;">
@@ -54,11 +68,34 @@ import { onAuthStateChanged, getAuth, User } from 'firebase/auth';
 import { doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from '../../../main';
 import NameValueControl from '../../ui/NameValueControl.vue';
+import { TabulatorFull as Tabulator } from 'tabulator-tables';
 
 const currentUser = ref<User | null>(null);
 const syainData = ref<DocumentData>();
 
 const tab = ref(null);
+
+
+interface State {
+  list: TableDataRow[];
+}
+type TableDataRow = {
+  id: number;
+  value: number;
+  update: string;
+};
+const state = ref<State>({
+  list: [
+    { id: 1, value: 1, update: "2024-11-05 10:20:30" },
+    { id: 2, value: 2, update: "2024-11-06 11:34:56" },
+  ],
+});
+const columns: any[] = [
+  { field: 'id', title: 'id' },
+  { field: 'value', title: 'value' },
+  { field: 'update', title: 'update' },
+];
+const tableElm = ref<HTMLElement>(); 
 
 onMounted(() => {
   const auth = getAuth();
@@ -80,6 +117,13 @@ onMounted(() => {
         console.log("No such document!");
       }
     }
+  });
+
+  if (tableElm.value === null) return;
+  new Tabulator(tableElm.value, {
+    columns: columns,
+    data: state.value.list,
+    reactiveData: true,
   });
 });
 </script>
